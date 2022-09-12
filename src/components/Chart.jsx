@@ -1,24 +1,58 @@
-import React, { useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { mockHistoricalData } from '../constants/mock';
 import { chartConfig } from '../constants/config';
-import { convertUnixTimestampToDate } from '../helpers/date-helpers';
+import { convertUnixTimestampToDate, convertDateToUnixTimestamp, createDate } from '../helpers/date-helpers';
 import Card from './Card';
 import ChartFilter from './ChartFilter';
+import ThemeContext from '../context/ThemeContext';
+import { fetchHistoricalData } from '../api/stock-api';
+import StockContext from '../context/StockContext';
 
 const Chart = () => {
-    const [data, setData] = useState(mockHistoricalData);
+    const [data, setData] = useState([]);
     const [filter, setFilter] = useState("1W");
 
-    const formatData = () => {
+    const {darkMode} = useContext(ThemeContext);
+    const { stockSymbol } = useContext(StockContext);
+
+    const formatData = (data) => {
         return data.c.map((item, index) => {
             return {
                 value: item.toFixed(2),
                 date: convertUnixTimestampToDate(data.t[index]),
-
             }
         })
     }
+
+    useEffect(() => {
+        const getDateRange = () => {
+            const { days, weeks, months, years } = chartConfig[filter];
+
+            const endDate = new Date();
+            const startDate = createDate(endDate, -days, -weeks, -months, -years);
+
+            const startTimestampUnix = convertDateToUnixTimestamp(startDate);
+            const endTimestampUnix = convertDateToUnixTimestamp(endDate);
+
+            console.log(startTimestampUnix)
+
+            return {startTimestampUnix, endTimestampUnix};
+        };
+        const updateChartData = async () => {
+            try {
+                const { startTimestampUnix, endTimestampUnix } = getDateRange();
+                const resolution = chartConfig[filter].resolution;
+                const result = await fetchHistoricalData(stockSymbol, resolution, startTimestampUnix, endTimestampUnix);
+                setData(formatData(result));
+            }
+            catch(error) {
+                setData([]);
+                console.log(error);
+            }
+        };
+
+        updateChartData();
+    }, [stockSymbol, filter]);
 
   return (
     <Card>
@@ -34,11 +68,11 @@ const Chart = () => {
             })}
         </ul>
         <ResponsiveContainer>
-            <AreaChart data={formatData(data)}>
+            <AreaChart data={data}>
                 <defs>
                     <linearGradient id="colorColor" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="rgb(199 210 254)" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="rgb(199 210 254)" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={darkMode ? '#312e81' : 'rgb(199 210 254)'} stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor={darkMode ? '#312e81' : 'rgb(199 210 254)'} stopOpacity={0}/>
                     </linearGradient>
                 </defs>
                 <Area 
@@ -49,7 +83,10 @@ const Chart = () => {
                     strokeWidth={0.5}
                     fill='url(#chartColor)'
                 />
-                <Tooltip />
+                <Tooltip 
+                    contentStyle={darkMode ? {backgroundColor: '#111827'} : null}
+                    itemStyle={darkMode ? {color:'#818cf8'} : null}
+                />
                 <XAxis dataKey={"date"} />
                 <YAxis domain={["dataMin", "dataMax"]} />
             </AreaChart>
