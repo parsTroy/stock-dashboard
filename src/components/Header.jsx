@@ -8,8 +8,8 @@ const Header = ({ name }) => {
         <div className='xl:px-22'>
             <h1 className='text-5xl'>{name}</h1>
             <Search />
-            <ThemeIcon />
         </div>
+            <ThemeIcon />
     </>
   )
 }
