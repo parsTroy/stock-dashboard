@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import './App.css';
 import Dashboard from './components/Dashboard';
+import Footer from './components/Footer';
+import Heading from './components/Heading';
 import StockContext from './context/StockContext';
 import ThemeContext from './context/ThemeContext';
 
@@ -11,11 +12,13 @@ function App() {
 
 
   return (
-    <ThemeContext.Provider value={{ darkMode, setDarkMode }}>
-      <StockContext.Provider value={{ stockSymbol, setStockSymbol }}>
-        <Dashboard />
-      </StockContext.Provider>
-    </ThemeContext.Provider>
+      <ThemeContext.Provider value={{ darkMode, setDarkMode }}>
+        <StockContext.Provider value={{ stockSymbol, setStockSymbol }}>
+          <Heading />
+          <Dashboard />
+          <Footer />
+        </StockContext.Provider>
+      </ThemeContext.Provider>
   );
 }
 

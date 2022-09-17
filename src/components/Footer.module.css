@@ -1,0 +1,15 @@
+.container {
+    color: #fff;
+    background-color: var(--accent-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+}
+.logo {
+    width: 200px;
+}
+
+.legal {
+    width: 800px;
+}
